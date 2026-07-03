@@ -213,7 +213,15 @@ def ubah_hapus_data(dataset, file_aktif):
         print("[!] Dataset masih kosong. Pilih dataset terlebih dahulu.\n")
         return file_aktif
 
-    tampilkan_daftar_data(dataset)
+    aksi = input_pilihan_menu(
+        "\n1) Hapus  2) Ubah  3) Batal\nPilihan: ",
+        {"1", "2", "3"}
+    )
+
+    if aksi == "3":
+        print("Dibatalkan.\n")
+        return file_aktif
+
     nim_target = input_teks("\nMasukkan NIM data (ketik 'batal' untuk kembali): ")
     if nim_target is None:
         print("Dibatalkan.\n")
@@ -224,16 +232,7 @@ def ubah_hapus_data(dataset, file_aktif):
         print(f"[!] Data dengan NIM {nim_target} tidak ditemukan.\n")
         return file_aktif
 
-    aksi = input_pilihan_menu(
-        f"\nData ditemukan: {item}\n1) Ubah  2) Hapus  3) Batal\nPilihan: ",
-        {"1", "2", "3"}
-    )
-
-    if aksi == "3":
-        print("Dibatalkan.\n")
-        return file_aktif
-
-    if aksi == "2":
+    if aksi == "1":
         dataset.remove(item)
         file_baru = simpan_sebagai_edited(dataset, file_aktif)
         print(f"[OK] Data dengan NIM {nim_target} berhasil dihapus.")
