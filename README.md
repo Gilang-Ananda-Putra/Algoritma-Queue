@@ -23,7 +23,7 @@ sistem_antrean/
 ├── models.py           -> definisi objek PermintaanLayanan
 ├── struktur_data.py     -> implementasi manual Queue & Priority Queue
 ├── algoritma.py          -> implementasi FCFS & Priority Scheduling
-├── dataset_io.py          -> load/simpan CSV & generator dataset sintetis
+├── dataset_io.py          -> load/simpan CSV
 ├── pengujian.py             -> uji otomatis 5x, rata-rata, export CSV
 ├── README.md
 ├── dataset/                  -> dataset skala 50 / 100 / 500 / 1000
@@ -37,10 +37,9 @@ sistem_antrean/
 
 ## Menu Program
 
-1. **Pilih / Buat Dataset** — memuat salah satu file CSV di `dataset/`,
-   atau generate dataset sintetis baru dengan skala bebas.
+1. **Pilih Dataset** — memuat salah satu file CSV di `dataset/`.
 2. **Tambah Data** — menambah satu permintaan layanan baru ke dataset aktif.
-3. **Ubah / Hapus Data** — mengubah atau menghapus data berdasarkan id.
+3. **Ubah / Hapus Data** — mengubah atau menghapus data berdasarkan NIM.
 4. **Jalankan FCFS (otomatis uji 5x)** — menjalankan algoritma FCFS
    sebanyak 5x berturut-turut pada dataset aktif (sesuai ketentuan panduan
    project), menampilkan ringkasan (rata-rata waktu tunggu, rata-rata
