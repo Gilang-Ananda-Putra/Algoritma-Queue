@@ -2,7 +2,7 @@ import glob
 import os
 
 from models import PermintaanLayanan, JENIS_LAYANAN
-from dataset_io import load_dataset_csv, generate_dataset, save_dataset_csv
+from dataset_io import load_dataset_csv, save_dataset_csv
 from algoritma import run_fcfs, run_priority
 from pengujian import uji_algoritma, tampilkan_hasil_uji, tampilkan_perbandingan, ekspor_csv
 
@@ -53,18 +53,19 @@ def cek_duplikat_nim(dataset, nim):
     return None
 
 
-def cari_data_by_id(dataset, id_target):
+def cari_data_by_nim(dataset, nim_target):
+    nim_target = str(nim_target).strip()
     for d in dataset:
-        if d.id_mahasiswa == id_target:
+        if d.nim == nim_target:
             return d
     return None
 
 
 def tampilkan_daftar_data(dataset):
-    print(f"\n{'ID':<5}{'Nama':<20}{'Jenis Layanan':<20}{'Status':<12}")
-    print("-" * 57)
+    print(f"\n{'ID':<5}{'NIM':<12}{'Nama':<20}{'Jenis Layanan':<20}{'Status':<12}")
+    print("-" * 69)
     for d in dataset:
-        print(f"{d.id_mahasiswa:<5}{d.nama:<20}{d.jenis_layanan:<20}{d.status:<12}")
+        print(f"{d.id_mahasiswa:<5}{d.nim:<12}{d.nama:<20}{d.jenis_layanan:<20}{d.status:<12}")
 
 def _kunci_urut_dataset(path):
     nama = os.path.basename(path)
@@ -80,23 +81,22 @@ def daftar_file_csv():
 
 
 def pilih_dataset_menu(dataset):
-    print("\n=== Pilih / Buat Dataset ===")
+    print("\n=== Pilih Dataset ===")
     file_list = daftar_file_csv()
 
-    if file_list:
-        print("Dataset yang tersedia di folder 'dataset/':")
-        for i, path in enumerate(file_list, start=1):
-            print(f"  {i}. {os.path.basename(path)}")
-        idx_generate = len(file_list) + 1
-        idx_batal = len(file_list) + 2
-        print(f"  {idx_generate}. Generate dataset sintetis baru")
-        print(f"  {idx_batal}. Batal")
-    else:
+    if not file_list:
         print("  (belum ada file .csv di folder 'dataset/')")
-        idx_generate = 1
-        idx_batal = 2
-        print("  1. Generate dataset sintetis baru")
-        print("  2. Batal")
+        print("  1. Batal")
+        pilihan = input_pilihan_menu("Pilihan: ", {"1"})
+        if pilihan == "1":
+            print("Dibatalkan.\n")
+        return False, None
+
+    print("Dataset yang tersedia di folder 'dataset/':")
+    for i, path in enumerate(file_list, start=1):
+        print(f"  {i}. {os.path.basename(path)}")
+    idx_batal = len(file_list) + 1
+    print(f"  {idx_batal}. Batal")
 
     pilihan_valid = {str(i) for i in range(1, idx_batal + 1)}
     pilihan_int = int(input_pilihan_menu("Pilihan: ", pilihan_valid))
@@ -104,20 +104,6 @@ def pilih_dataset_menu(dataset):
     if pilihan_int == idx_batal:
         print("Dibatalkan.\n")
         return False, None
-
-    if pilihan_int == idx_generate:
-        n = input_angka("Jumlah data yang di-generate (mis. 50/100/500/1000): ", 1, None)
-        if n is None:
-            print("Dibatalkan.\n")
-            return False, None
-        dataset.clear()
-        dataset.extend(generate_dataset(n))
-        nama_file = f"dataset_{n}_generated.csv"
-        path_simpan = os.path.join(DATASET_DIR, nama_file)
-        save_dataset_csv(dataset, path_simpan)
-        print(f"[OK] {n} data sintetis berhasil digenerate dan disimpan sebagai "
-              f"'{nama_file}'.\n")
-        return True, nama_file
 
     path = file_list[pilihan_int - 1]
     try:
@@ -224,18 +210,18 @@ def tambah_data(dataset, file_aktif):
 def ubah_hapus_data(dataset, file_aktif):
     print("\n=== Ubah / Hapus Data ===")
     if not dataset:
-        print("[!] Dataset masih kosong. Pilih/buat dataset terlebih dahulu.\n")
+        print("[!] Dataset masih kosong. Pilih dataset terlebih dahulu.\n")
         return file_aktif
 
     tampilkan_daftar_data(dataset)
-    id_target = input_angka("\nMasukkan id data (ketik 'batal' untuk kembali): ", 1, None)
-    if id_target is None:
+    nim_target = input_teks("\nMasukkan NIM data (ketik 'batal' untuk kembali): ")
+    if nim_target is None:
         print("Dibatalkan.\n")
         return file_aktif
 
-    item = cari_data_by_id(dataset, id_target)
+    item = cari_data_by_nim(dataset, nim_target)
     if item is None:
-        print(f"[!] Data dengan id {id_target} tidak ditemukan.\n")
+        print(f"[!] Data dengan NIM {nim_target} tidak ditemukan.\n")
         return file_aktif
 
     aksi = input_pilihan_menu(
@@ -250,7 +236,7 @@ def ubah_hapus_data(dataset, file_aktif):
     if aksi == "2":
         dataset.remove(item)
         file_baru = simpan_sebagai_edited(dataset, file_aktif)
-        print(f"[OK] Data id {id_target} berhasil dihapus.")
+        print(f"[OK] Data dengan NIM {nim_target} berhasil dihapus.")
         print(f"[OK] Dataset aktif disimpan sebagai '{file_baru}' "
               f"(file asli '{file_aktif}' tidak diubah).\n")
         return file_baru
@@ -302,7 +288,7 @@ def main():
  SISTEM ANTREAN PELAYANAN AKADEMIK
  FCFS vs Priority Scheduling | Queue vs Priority Queue
 ==================================================
- 1. Pilih / Buat Dataset
+ 1. Pilih Dataset
  2. Tambah Data
  3. Ubah / Hapus Data
  4. Jalankan FCFS (otomatis uji 5x)
@@ -348,7 +334,7 @@ def main():
 
         elif pilihan == "4":
             if not dataset:
-                print("\n[!] Dataset masih kosong. Pilih/buat dataset dulu (menu 1).\n")
+                print("\n[!] Dataset masih kosong. Pilih dataset dulu (menu 1).\n")
                 continue
             hasil = uji_algoritma(dataset, run_fcfs)
             tampilkan_hasil_uji("FCFS", hasil)
@@ -359,7 +345,7 @@ def main():
 
         elif pilihan == "5":
             if not dataset:
-                print("\n[!] Dataset masih kosong. Pilih/buat dataset dulu (menu 1).\n")
+                print("\n[!] Dataset masih kosong. Pilih dataset dulu (menu 1).\n")
                 continue
             hasil = uji_algoritma(dataset, run_priority)
             tampilkan_hasil_uji("Priority Scheduling", hasil)
